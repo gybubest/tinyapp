@@ -17,47 +17,50 @@ const urlDatabase = {
 
 app.get("/", (req, res) => {
   res.send("Hello!");
-});
-
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
+}); 
 
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
+//Add a GET Route to Show the URL Submission Form
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+//Add a POST Route to Receive the Form Submission
 app.post("/urls", (req, res) => {
   const newLongURL = req.body.longURL;
-  const newShortenURL = generateRandomString();
-  urlDatabase[newShortenURL] = newLongURL;
-  res.redirect(`/urls/${newShortenURL}`);
+  const newShortURL = generateRandomString();
+  urlDatabase[newShortURL] = newLongURL;
+  //Redirect to the shortURL page After Form Submission
+  res.redirect(`/urls/${newShortURL}`);
 });
 
+//Redirect to the shortURL page
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase.shortURL };
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
 });
 
-app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect("/urls");
-});
-
+//Redirect to the longURL page by Short URLs
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
 });
 
+//Add a POST route that removes a URL resource
+app.post("/urls/:shortURL/delete", (req, res) => {
+  delete urlDatabase[req.params.shortURL];
+  res.redirect("/urls");
+});
+
+//Add a POST route that updates the longURL after submission on the shortURL page
+app.post("/urls/:shortURL", (req, res) => {
+  urlDatabase[req.params.shortURL] = req.body.longURL;
+  res.redirect("/urls");
+});
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}!`);
