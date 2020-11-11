@@ -26,4 +26,15 @@ const fetchID = function(email, database) {
   }
 };
 
-module.exports = { generateRandomString, fetchID, checkEmail, checkPassword };
+const urlsForUser = function(id, database) {
+  let result = {};
+  for (const shortURL in database) {
+    const url = database[shortURL];
+    if (url['user_id'] === id) {
+      result[shortURL] = url['longURL'];
+    }
+  }
+  return result;
+};
+
+module.exports = { generateRandomString, checkEmail, checkPassword, fetchID, urlsForUser };

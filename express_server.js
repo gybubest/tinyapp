@@ -3,82 +3,112 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
-const { generateRandomString, fetchID, checkEmail, checkPassword } = require("./helper");
+const { generateRandomString, checkEmail, checkPassword, fetchID, urlsForUser } = require("./helper");
 
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser())
+app.use(cookieParser());
 app.set("view engine", "ejs");
 
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", user_id: "userRandomID" },
+  "9sm5xK": { longURL: "http://www.google.com", user_id: "user2RandomID" },
+  "8wl3o2": { longURL: "https://yandex.ru", user_id: "user3RandomID" }
 };
 
-const users = { 
+const users = {
   "userRandomID": {
-    id: "userRandomID", 
-    email: "user@example.com", 
+    id: "userRandomID",
+    email: "user@example.com",
     password: "purple-monkey-dinosaur"
   },
- "user2RandomID": {
-    id: "user2RandomID", 
-    email: "user2@example.com", 
+  "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
     password: "dishwasher-funk"
   },
   "user3RandomID": {
-     id: "user3RandomID", 
-     email: "user3@example.com", 
-     password: "123"
-   }
-}
+    id: "user3RandomID",
+    email: "user3@example.com",
+    password: "123"
+  }
+};
 
 app.get("/", (req, res) => {
   res.send("Hello!");
-}); 
+});
 
 app.get("/urls", (req, res) => {
-  const user = req.cookies['user_id'];
-  const templateVars = { urls: urlDatabase, user: users[user] };
+  const userID = req.cookies['user_id'];
+  if (!userID) {
+    return res.redirect("/login");
+  }
+  const urlsByUserID = urlsForUser(userID, urlDatabase);
+  const templateVars = { urls: urlsByUserID, user: users[userID] };
   res.render("urls_index", templateVars);
 });
 
-//Add a GET Route to Show the URL Submission Form
+//GET Route to create a new short URL
 app.get("/urls/new", (req, res) => {
-  const templateVars = { user: users['user_id'] };
+  const userID = req.cookies['user_id'];
+  if (!userID) {
+    return res.redirect("/login");
+  }
+  const templateVars = { user: users[userID] };
   res.render("urls_new", templateVars);
 });
 
-//Add a POST Route to Receive the Form Submission
+//POST Route to receive the long URL
 app.post("/urls", (req, res) => {
   const newLongURL = req.body.longURL;
   const newShortURL = generateRandomString();
-  urlDatabase[newShortURL] = newLongURL;
-  //Redirect to the shortURL page After Form Submission
+  const userID = req.cookies['user_id'];
+
+  urlDatabase[newShortURL] = {
+    longURL: newLongURL,
+    user_id: userID
+  };
+  //Redirect to the shortURL page after receiving the long URL
   res.redirect(`/urls/${newShortURL}`);
 });
 
 //Redirect to the shortURL page
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: users['user_id'] };
+  const userID = req.cookies['user_id'];
+  if (!userID) {
+    return res.redirect("/login");
+  }
+  const shortURL = req.params['shortURL'];
+  const templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL]['longURL'], user: users[userID] };
   res.render("urls_show", templateVars);
 });
 
 //Redirect to the longURL page by Short URLs
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const shortURL = req.params['shortURL'];
+  const longURL = urlDatabase[shortURL]['longURL'];
   res.redirect(longURL);
 });
 
-//Add a POST route that removes a URL resource
+//POST route that removes a URL resource
 app.post("/urls/:shortURL/delete", (req, res) => {
+  const userID = req.cookies['user_id'];
+  if (!userID) {
+    return res.redirect("/login");
+  }
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
 });
 
-//Add a POST route that updates the longURL after submission on the shortURL page
+//POST route that updates the longURL after submission on the shortURL page
 app.post("/urls/:shortURL", (req, res) => {
-  urlDatabase[req.params.shortURL] = req.body.longURL;
+  const userID = req.cookies['user_id'];
+  if (!userID) {
+    return res.redirect("/login");
+  }
+  const shortURL = req.params['shortURL'];
+  const longURL = req.body['longURL'];
+  urlDatabase[shortURL]['longURL'] = longURL;
   res.redirect("/urls");
 });
 
@@ -122,10 +152,10 @@ app.post("/register", (req, res) => {
   } else {
     const userID = generateRandomString();
     users[userID] = {
-      id: userID, 
-      email: req.body.email, 
+      id: userID,
+      email: req.body.email,
       password: req.body.password
-    }
+    };
     res.cookie("user_id", userID);
     res.redirect("/urls");
   }
