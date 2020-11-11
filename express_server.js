@@ -12,23 +12,66 @@ const generateRandomString = function() {
   return Math.random().toString(36).substr(2, 6)
 };
 
+const checkEmail = function(email, database) {
+  for (const user in database) {
+    if (database[user]['email'] === email) {
+      return true;
+    }
+  }
+};
+
+const checkPassword = function(password, database) {
+  for (const user in database) {
+    if (database[user]['password'] === password) {
+      return true;
+    }
+  }
+};
+
+const fetchID = function(email, database) {
+  for (const user in database) {
+    if (database[user]['email'] === email) {
+      return database[user]['id'];
+    }
+  }
+};
+
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  },
+  "user3RandomID": {
+     id: "user3RandomID", 
+     email: "user3@example.com", 
+     password: "123"
+   }
+}
 
 app.get("/", (req, res) => {
   res.send("Hello!");
 }); 
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies['username'] };
+  const user = req.cookies['user_id'];
+  const templateVars = { urls: urlDatabase, user: users[user] };
   res.render("urls_index", templateVars);
 });
 
 //Add a GET Route to Show the URL Submission Form
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username: req.cookies['username'] };
+  const templateVars = { user: users['user_id'] };
   res.render("urls_new", templateVars);
 });
 
@@ -43,7 +86,7 @@ app.post("/urls", (req, res) => {
 
 //Redirect to the shortURL page
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies['username'] };
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: users['user_id'] };
   res.render("urls_show", templateVars);
 });
 
@@ -65,16 +108,53 @@ app.post("/urls/:shortURL", (req, res) => {
   res.redirect("/urls");
 });
 
-//Add an endpoint to handle a POST to /login
+//GET to /login
+app.get("/login", (req, res) => {
+  res.render("login");
+});
+
+//POST to /login
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body['username']);
+  const userEmail = req.body.email;
+  const userPassword = req.body.password;
+  if (checkEmail(userEmail, users)) {
+    if (checkPassword(userPassword, users)) {
+      const userID = fetchID(userEmail, users);
+      res.cookie("user_id", userID);
+      return res.redirect("/urls");
+    }
+  }
+  return res.sendStatus(403);
+});
+
+//POST to /logout endpoint
+app.post("/logout", (req, res) => {
+  res.clearCookie('user_id');
   res.redirect("/urls");
 });
 
-//Implement the /logout endpoint
-app.post("/logout", (req, res) => {
-  res.clearCookie('username');
-  res.redirect("/urls");
+//GET Route to registration
+app.get("/register", (req, res) => {
+  res.render("register");
+});
+
+//POST /register endpoint
+app.post("/register", (req, res) => {
+  if (req.body.email === '' || req.body.password === '') {
+    return res.sendStatus(400);
+  }
+  if (checkEmail(req.body.email, users)) {
+    return res.sendStatus(400);
+  } else {
+    const userID = generateRandomString();
+    users[userID] = {
+      id: userID, 
+      email: req.body.email, 
+      password: req.body.password
+    }
+    res.cookie("user_id", userID);
+    res.redirect("/urls");
+  }
 });
 
 app.listen(PORT, () => {
