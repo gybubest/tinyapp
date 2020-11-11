@@ -3,38 +3,12 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const { generateRandomString, fetchID, checkEmail, checkPassword } = require("./helper");
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser())
 app.set("view engine", "ejs");
 
-const generateRandomString = function() {
-  return Math.random().toString(36).substr(2, 6)
-};
-
-const checkEmail = function(email, database) {
-  for (const user in database) {
-    if (database[user]['email'] === email) {
-      return true;
-    }
-  }
-};
-
-const checkPassword = function(password, database) {
-  for (const user in database) {
-    if (database[user]['password'] === password) {
-      return true;
-    }
-  }
-};
-
-const fetchID = function(email, database) {
-  for (const user in database) {
-    if (database[user]['email'] === email) {
-      return database[user]['id'];
-    }
-  }
-};
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
