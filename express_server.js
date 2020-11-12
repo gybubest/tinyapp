@@ -3,7 +3,9 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
-const { generateRandomString, checkEmail, checkPassword, fetchID, urlsForUser } = require("./helper");
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+const { generateRandomString, checkEmail, authenticateUser, fetchID, urlsForUser } = require("./helper");
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
@@ -118,18 +120,29 @@ app.get("/login", (req, res) => {
 });
 
 //POST to /login
+// app.post("/login", (req, res) => {
+//   const userEmail = req.body.email;
+//   const userPassword = req.body.password;
+//   if (checkEmail(userEmail, users)) {
+//     if (checkPassword(userPassword, users)) {
+//       const userID = fetchID(userEmail, users);
+//       res.cookie("user_id", userID);
+//       return res.redirect("/urls");
+//     }
+//   }
+//   return res.sendStatus(403);
+// });
 app.post("/login", (req, res) => {
   const userEmail = req.body.email;
   const userPassword = req.body.password;
-  if (checkEmail(userEmail, users)) {
-    if (checkPassword(userPassword, users)) {
-      const userID = fetchID(userEmail, users);
-      res.cookie("user_id", userID);
-      return res.redirect("/urls");
-    }
+  if (authenticateUser(userEmail, userPassword, users)) {
+    const userID = fetchID(userEmail, users);
+    res.cookie("user_id", userID);
+    return res.redirect("/urls");
   }
   return res.sendStatus(403);
 });
+
 
 //POST to /logout endpoint
 app.post("/logout", (req, res) => {
@@ -154,8 +167,9 @@ app.post("/register", (req, res) => {
     users[userID] = {
       id: userID,
       email: req.body.email,
-      password: req.body.password
+      password: bcrypt.hashSync(req.body.password, saltRounds)
     };
+    console.log(users);
     res.cookie("user_id", userID);
     res.redirect("/urls");
   }

@@ -1,3 +1,5 @@
+const bcrypt = require('bcrypt');
+
 const generateRandomString = function() {
   return Math.random().toString(36).substr(2, 6)
 };
@@ -10,12 +12,24 @@ const checkEmail = function(email, database) {
   }
 };
 
-const checkPassword = function(password, database) {
+// const checkPassword = function(password, database) {
+//   for (const user in database) {
+//     if (bcrypt.compareSync(password, database[user]['password'])) {
+//       return true;
+//     }
+//   }
+//   return false;
+// };
+
+const authenticateUser = function(email, password, database) {
   for (const user in database) {
-    if (database[user]['password'] === password) {
-      return true;
+    if (database[user]['email'] === email) {
+      if (bcrypt.compareSync(password, database[user]['password'])) {
+        return true;
+      }
     }
   }
+  return false;
 };
 
 const fetchID = function(email, database) {
@@ -37,4 +51,4 @@ const urlsForUser = function(id, database) {
   return result;
 };
 
-module.exports = { generateRandomString, checkEmail, checkPassword, fetchID, urlsForUser };
+module.exports = { generateRandomString, checkEmail, authenticateUser, fetchID, urlsForUser };
