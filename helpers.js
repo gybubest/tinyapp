@@ -32,7 +32,7 @@ const authenticateUser = function(email, password, database) {
   return false;
 };
 
-const fetchID = function(email, database) {
+const fetchUserID = function(email, database) {
   for (const user in database) {
     if (database[user]['email'] === email) {
       return database[user]['id'];
@@ -51,4 +51,4 @@ const urlsForUser = function(id, database) {
   return result;
 };
 
-module.exports = { generateRandomString, checkEmail, authenticateUser, fetchID, urlsForUser };
+module.exports = { generateRandomString, checkEmail, authenticateUser, fetchUserID, urlsForUser };

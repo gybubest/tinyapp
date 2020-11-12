@@ -5,7 +5,7 @@ const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session')
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
-const { generateRandomString, checkEmail, authenticateUser, fetchID, urlsForUser } = require("./helper");
+const { generateRandomString, checkEmail, authenticateUser, fetchUserID, urlsForUser } = require("./helpers");
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({
@@ -131,7 +131,7 @@ app.get("/login", (req, res) => {
 //   const userPassword = req.body.password;
 //   if (checkEmail(userEmail, users)) {
 //     if (checkPassword(userPassword, users)) {
-//       const userID = fetchID(userEmail, users);
+//       const userID = fetchUserID(userEmail, users);
 //       res.cookie("user_id", userID);
 //       return res.redirect("/urls");
 //     }
@@ -142,7 +142,7 @@ app.post("/login", (req, res) => {
   const userEmail = req.body.email;
   const userPassword = req.body.password;
   if (authenticateUser(userEmail, userPassword, users)) {
-    const userID = fetchID(userEmail, users);
+    const userID = fetchUserID(userEmail, users);
     req.session.user_id = userID;
     // console.log(users);
     return res.redirect("/urls");
@@ -176,7 +176,7 @@ app.post("/register", (req, res) => {
       email: req.body.email,
       password: bcrypt.hashSync(req.body.password, saltRounds)
     };
-    // console.log(users);
+    console.log(users);
     req.session.user_id = userID;
     res.redirect("/urls");
   }
