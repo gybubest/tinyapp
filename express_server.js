@@ -2,13 +2,17 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
+const cookieSession = require('cookie-session')
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const { generateRandomString, checkEmail, authenticateUser, fetchID, urlsForUser } = require("./helper");
 
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['N0secrets?', '2hackerS!'],
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}))
 app.set("view engine", "ejs");
 
 
@@ -41,7 +45,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session['user_id'];
   if (!userID) {
     return res.redirect("/login");
   }
@@ -52,7 +56,7 @@ app.get("/urls", (req, res) => {
 
 //GET Route to create a new short URL
 app.get("/urls/new", (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session['user_id'];
   if (!userID) {
     return res.redirect("/login");
   }
@@ -64,7 +68,7 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls", (req, res) => {
   const newLongURL = req.body.longURL;
   const newShortURL = generateRandomString();
-  const userID = req.cookies['user_id'];
+  const userID = req.session['user_id'];
 
   urlDatabase[newShortURL] = {
     longURL: newLongURL,
@@ -76,7 +80,7 @@ app.post("/urls", (req, res) => {
 
 //Redirect to the shortURL page
 app.get("/urls/:shortURL", (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session['user_id'];
   if (!userID) {
     return res.redirect("/login");
   }
@@ -94,7 +98,8 @@ app.get("/u/:shortURL", (req, res) => {
 
 //POST route that removes a URL resource
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const userID = req.cookies['user_id'];
+  // const userID = req.cookies['user_id'];
+  const userID = req.session['user_id'];
   if (!userID) {
     return res.redirect("/login");
   }
@@ -104,7 +109,8 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 //POST route that updates the longURL after submission on the shortURL page
 app.post("/urls/:shortURL", (req, res) => {
-  const userID = req.cookies['user_id'];
+  // const userID = req.cookies['user_id'];
+  const userID = req.session['user_id'];
   if (!userID) {
     return res.redirect("/login");
   }
@@ -137,7 +143,8 @@ app.post("/login", (req, res) => {
   const userPassword = req.body.password;
   if (authenticateUser(userEmail, userPassword, users)) {
     const userID = fetchID(userEmail, users);
-    res.cookie("user_id", userID);
+    req.session.user_id = userID;
+    // console.log(users);
     return res.redirect("/urls");
   }
   return res.sendStatus(403);
@@ -146,7 +153,7 @@ app.post("/login", (req, res) => {
 
 //POST to /logout endpoint
 app.post("/logout", (req, res) => {
-  res.clearCookie('user_id');
+  req.session = null;
   res.redirect("/urls");
 });
 
@@ -169,8 +176,8 @@ app.post("/register", (req, res) => {
       email: req.body.email,
       password: bcrypt.hashSync(req.body.password, saltRounds)
     };
-    console.log(users);
-    res.cookie("user_id", userID);
+    // console.log(users);
+    req.session.user_id = userID;
     res.redirect("/urls");
   }
 });
