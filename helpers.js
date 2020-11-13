@@ -12,15 +12,6 @@ const checkEmail = function(email, database) {
   }
 };
 
-// const checkPassword = function(password, database) {
-//   for (const user in database) {
-//     if (bcrypt.compareSync(password, database[user]['password'])) {
-//       return true;
-//     }
-//   }
-//   return false;
-// };
-
 const authenticateUser = function(email, password, database) {
   for (const user in database) {
     if (database[user]['email'] === email) {
