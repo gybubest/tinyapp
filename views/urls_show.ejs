@@ -14,6 +14,16 @@
         <h5 class="card-title">TinyURL for: <%= longURL %></h5>
         <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
       </div>
+      <div class="card-body">
+        <p class="card-text">Total Visit:<%= count %>, Unique Visitors:<%= uniqueVisitors %></a></p>
+        <% for (key in urlAnalytics) { %>
+          <% if (key !== 'count' || key !== 'uniqueVisitors') { %>
+            <% const visitorID = key; %>
+            <% const time = urlAnalytics.key; %>
+            <p class="card-text">Visitor: <%= visitorID %>; Visit Time: <%= time %> </a></p>
+            <% } %>
+        <% } %>
+      </div>
       <div class="card-body" align="center">
         <form class="form-inline" method="POST" action="/urls/<%= shortURL %>?_method=PUT">
             <div class="form-control-plaintext" style="width: 300px; margin: 1em">Edit the original URL: </div>

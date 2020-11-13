@@ -1,11 +1,12 @@
 const express = require("express");
 const app = express();
-const PORT = 8080; // default port 8080
+const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
-const methodOverride = require('method-override')
+const methodOverride = require('method-override');
+const cookieParser = require('cookie-parser');
 const { generateRandomString, checkEmail, authenticateUser, fetchUserID, urlsForUser } = require("./helpers");
 
 app.set("view engine", "ejs");
@@ -15,11 +16,12 @@ app.use(cookieSession({
   keys: ['N0secrets?', '2hackerS!'],
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
-app.use(methodOverride('_method'))
+app.use(methodOverride('_method'));
+app.use(cookieParser());
 
 const urlDatabase = {
   // ***FORMAT*** 
-  // "b2xVn2": { longURL: "http://www.lighthouselabs.ca", user_id: "userRandomID" }
+  // "shortURL": { longURL: "http://www.lighthouselabs.ca", user_id: "userRandomID" }
 };
 
 const users = {
@@ -28,6 +30,15 @@ const users = {
   //   id: "userRandomID",
   //   email: "user@example.com",
   //   password: "purple-monkey-dinosaur"
+  // }
+};
+
+const urlAnalytics = {
+  // ***FORMAT***
+  // "shortURL": {
+  //   count: 0,
+  //   uniqueVisitors: 0,
+  //   visitorID: [time1, time2...]
   // }
 };
 
@@ -82,16 +93,18 @@ app.post("/urls", (req, res) => {
 //Redirect to the shortURL page
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params['shortURL'];
-  if (urlDatabase[shortURL] === undefined) {
+  const shortURLInfo = urlDatabase[shortURL];
+  if (shortURLInfo === undefined) {
     return res.sendStatus(404);
   }
 
   const userID = req.session['user_id'];
-  if (urlDatabase[shortURL][['user_id']] !== userID) {
+  if (shortURLInfo[['user_id']] !== userID) {
     return res.sendStatus(401);
   }
-  
-  const templateVars = { shortURL: shortURL, longURL: urlDatabase[shortURL]['longURL'], user: users[userID] };
+
+  const { count, uniqueVisitors } = urlAnalytics;
+  const templateVars = { shortURL: shortURL, longURL: shortURLInfo['longURL'], user: users[userID], count: count, uniqueVisitors: uniqueVisitors, urlAnalytics: urlAnalytics};
   res.render("urls_show", templateVars);
 });
 
@@ -101,7 +114,31 @@ app.get("/u/:shortURL", (req, res) => {
   if (urlDatabase[shortURL] === undefined) {
     return res.sendStatus(404);
   }
+  let history = urlAnalytics[shortURL];
+  if (history === undefined) {
+    history = {
+      count: 0,
+      uniqueVisitors: 0
+    };
+    urlAnalytics[shortURL] = history;
+  }
+  history.count += 1;
 
+  const time = new Date().toLocaleString();
+  let visitorID = req.cookies['visitor_id'];
+
+  if (visitorID === undefined) {
+    visitorID = generateRandomString();
+    res.cookie('visitor_id', visitorID);
+  }
+  if (history[visitorID] === undefined) {
+    history.uniqueVisitors += 1;
+    history[visitorID] = [];
+  }
+  history[visitorID].push(time);
+  
+  // console.log(req.cookies, urlAnalytics);
+  
   const longURL = urlDatabase[shortURL]['longURL'];
   res.redirect(longURL);
 });
@@ -182,6 +219,5 @@ app.post("/register", (req, res) => {
     password: bcrypt.hashSync(req.body.password, saltRounds)
   };
   req.session.user_id = userID;
-  
   res.redirect("/urls");
 });

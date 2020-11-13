@@ -18,6 +18,7 @@ Enjoy!
 - EJS
 - bcrypt
 - body-parser
+- cookie-parser
 - cookie-session
 - method-override
 
