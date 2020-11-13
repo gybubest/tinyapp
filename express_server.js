@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
+const methodOverride = require('method-override')
 const { generateRandomString, checkEmail, authenticateUser, fetchUserID, urlsForUser } = require("./helpers");
 
 app.set("view engine", "ejs");
@@ -14,6 +15,7 @@ app.use(cookieSession({
   keys: ['N0secrets?', '2hackerS!'],
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
+app.use(methodOverride('_method'))
 
 const urlDatabase = {
   // ***FORMAT*** 
@@ -104,8 +106,8 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-//POST route that removes a URL resource
-app.post("/urls/:shortURL/delete", (req, res) => {
+//DELETE route that removes a URL resource
+app.delete("/urls/:shortURL", (req, res) => {
   const userID = req.session['user_id'];
   if (!userID) {
     return res.redirect("/login");
@@ -114,8 +116,8 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 });
 
-//POST route that updates the longURL after submission on the shortURL page
-app.post("/urls/:shortURL", (req, res) => {
+//PUT route that updates the longURL on the shortURL page
+app.put("/urls/:shortURL", (req, res) => {
   const userID = req.session['user_id'];
   if (!userID) {
     return res.redirect("/login");
