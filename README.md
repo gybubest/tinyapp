@@ -7,8 +7,9 @@ Enjoy!
 
 ## Final Product
 
-!["screenshot description"](#)
-!["screenshot description"](#)
+!["MyURLs Page"](https://github.com/gybubest/tinyapp/blob/master/docs/urls-page.png?raw=true)
+!["Create New URL Page"](https://github.com/gybubest/tinyapp/blob/master/docs/urls:new-page.png?raw=true)
+!["Shortened URL or Update original URL"](https://github.com/gybubest/tinyapp/blob/master/docs/urls:id-page.png?raw=true)
 
 ## Dependencies
 
