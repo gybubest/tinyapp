@@ -7,9 +7,10 @@ Enjoy!
 
 ## Final Product
 
-!["MyURLs Page"](https://github.com/gybubest/tinyapp/blob/master/docs/urls-page.png?raw=true)
-!["Create New URL Page"](https://github.com/gybubest/tinyapp/blob/master/docs/urls:new-page.png?raw=true)
-!["Shortened URL or Update original URL"](https://github.com/gybubest/tinyapp/blob/master/docs/urls:id-page.png?raw=true)
+!["/urls Page"](https://github.com/gybubest/tinyapp/blob/master/docs/:urls.png?raw=true)
+!["/urls/new Page"](https://github.com/gybubest/tinyapp/blob/master/docs/:urls:new.png?raw=true)
+!["/urls/:id Page"](https://github.com/gybubest/tinyapp/blob/master/docs/:urls:id.png?raw=true)
+!["/urls/:id#analytics Page"](https://github.com/gybubest/tinyapp/blob/master/docs/:urls:id%23analytics.png?raw=true)
 
 ## Dependencies
 
