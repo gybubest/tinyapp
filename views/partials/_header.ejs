@@ -10,7 +10,7 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
       <% if (user) { %>
-        <div class="collapse navbar-collapse">
+        <div class="navbar-nav flex-row ml-md-auto d-none d-md-flex">
           <form class="form-inline" method="POST" action="/logout">
             <div class="form-group mb-2">
               <a class="nav-link disabled text-body" href="#" tabindex="-1" aria-disabled="true">Logged in as: <%= user['email'] %></a>
@@ -21,7 +21,7 @@
           </form>
         </div>
       <% } else { %>
-        <div class="navbar-nav">
+        <div class="navbar-nav flex-row ml-md-auto d-none d-md-flex">
           <a class="nav-item nav-link" href="/login">Login</a>
           <a class="nav-item nav-link" href="/register">Register</a>
         </div>

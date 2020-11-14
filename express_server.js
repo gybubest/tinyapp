@@ -37,7 +37,7 @@ const urlAnalytics = {
   // ***FORMAT***
   // "shortURL": {
   //   count: 0,
-  //   uniqueVisitors: 0,
+  //   uniqueCount: 0,
   //   visitorID: [time1, time2...]
   // }
 };
@@ -103,8 +103,13 @@ app.get("/urls/:shortURL", (req, res) => {
     return res.sendStatus(401);
   }
 
-  const { count, uniqueVisitors } = urlAnalytics;
-  const templateVars = { shortURL: shortURL, longURL: shortURLInfo['longURL'], user: users[userID], count: count, uniqueVisitors: uniqueVisitors, urlAnalytics: urlAnalytics};
+  const { count, uniqueCount } = urlAnalytics;
+  const templateVars = { 
+    shortURL: shortURL, 
+    longURL: shortURLInfo['longURL'], 
+    user: users[userID], 
+    urlAnalytics: urlAnalytics[shortURL]
+  };
   res.render("urls_show", templateVars);
 });
 
@@ -118,7 +123,7 @@ app.get("/u/:shortURL", (req, res) => {
   if (history === undefined) {
     history = {
       count: 0,
-      uniqueVisitors: 0
+      uniqueCount: 0
     };
     urlAnalytics[shortURL] = history;
   }
@@ -132,7 +137,7 @@ app.get("/u/:shortURL", (req, res) => {
     res.cookie('visitor_id', visitorID);
   }
   if (history[visitorID] === undefined) {
-    history.uniqueVisitors += 1;
+    history.uniqueCount += 1;
     history[visitorID] = [];
   }
   history[visitorID].push(time);
