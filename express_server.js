@@ -20,7 +20,7 @@ app.use(methodOverride('_method'));
 app.use(cookieParser());
 
 const urlDatabase = {
-  // ***FORMAT*** 
+  // ***FORMAT***
   // "shortURL": { longURL: "http://www.lighthouselabs.ca", user_id: "userRandomID" }
 };
 
@@ -61,7 +61,10 @@ app.get("/urls", (req, res) => {
   }
 
   const urlsByUserID = urlsForUser(userID, urlDatabase);
-  const templateVars = { urls: urlsByUserID, user: users[userID] };
+  const templateVars = {
+    urls: urlsByUserID,
+    user: users[userID]
+  };
   res.render("urls_index", templateVars);
 });
 
@@ -103,11 +106,10 @@ app.get("/urls/:shortURL", (req, res) => {
     return res.sendStatus(401);
   }
 
-  const { count, uniqueCount } = urlAnalytics;
-  const templateVars = { 
-    shortURL: shortURL, 
-    longURL: shortURLInfo['longURL'], 
-    user: users[userID], 
+  const templateVars = {
+    shortURL: shortURL,
+    longURL: shortURLInfo['longURL'],
+    user: users[userID],
     urlAnalytics: urlAnalytics[shortURL]
   };
   res.render("urls_show", templateVars);
@@ -141,9 +143,7 @@ app.get("/u/:shortURL", (req, res) => {
     history[visitorID] = [];
   }
   history[visitorID].push(time);
-  
-  // console.log(req.cookies, urlAnalytics);
-  
+    
   const longURL = urlDatabase[shortURL]['longURL'];
   res.redirect(longURL);
 });
@@ -216,7 +216,7 @@ app.post("/register", (req, res) => {
 
   if (checkEmail(req.body.email, users)) {
     return res.sendStatus(400);
-  } 
+  }
   const userID = generateRandomString();
   users[userID] = {
     id: userID,
