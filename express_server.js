@@ -42,10 +42,6 @@ const urlAnalytics = {
   // }
 };
 
-app.listen(PORT, () => {
-  console.log(`App listening on port ${PORT}!`);
-});
-
 app.get("/", (req, res) => {
   const userID = req.session['user_id'];
   if (!userID) {
@@ -225,4 +221,8 @@ app.post("/register", (req, res) => {
   };
   req.session.user_id = userID;
   res.redirect("/urls");
+});
+
+app.listen(PORT, () => {
+  console.log(`App listening on port ${PORT}!`);
 });
